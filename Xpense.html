@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<link
+			rel="stylesheet"
+			href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+			integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+			crossorigin="anonymous"
+		/>
+		<script
+			defer
+			src="https://use.fontawesome.com/releases/v5.7.2/js/all.js"
+			integrity="sha384-0pzryjIRos8mFBWMzSSZApWtPl/5++eIfzYmTgBBmXYdhvxPc+XcFEk+zJwDgWbP"
+			crossorigin="anonymous"
+		></script>
+		<title>Xpense</title>
+
+		<style>
+			#headingTotal{
+				text-align: right;
+			}
+		</style>
+
+    </head>
+    <body>
+        <nav class="navbar navbar-dark bg-dark">
+			<span class="navbar-brand mb-0 h1">Xpense</span>
+		</nav>
+        <div class="container-fluid bg-light" style="height: 100vh;">
+			<div class = container>
+				<div class="jumbotron mt-4">
+					<div class=" input-group mb-3 " >
+					<input id="expenseAmt" class="form-control" type="text" placeholder="Amount spent">
+					<div class = "input-group-append">
+						<span class ="input-group-text">₹</span>
+					</div>
+				    </div>
+				    <div class="input-group mb-3">
+					<div class = "input-group-prepend">
+						<span class ="input-group-text">@</span>
+					</div>
+					<input id = "expenseDesc" class="form-control" type="text" placeholder="Spent on">
+				    <div class="input-group-append">
+						<button id = "addExpense" class="btn btn-outline-primary">Add</button> 
+					</div>
+					</div>
+					
+					<h3 id="headingTotal" ></h3>
+				</div>
+				<!-- list items get added here-->
+				<div id="expenseTable"></div>
+
+			</div>
+		</div>
+		
+		<script>
+            //select btn element
+                const element = document.querySelector("#addExpense");
+            //select the input ele 
+           
+                const inputElement =  document.querySelector("#expenseAmt");
+                const inputDescElem = document.querySelector("#expenseDesc");
+                const expenseTableElem = document.querySelector("#expenseTable");
+            //listen to click event
+                element.addEventListener("click",addExpenseTotal, false);
+                document.addEventListener("keypress", function (event){
+                    if (event.keyCode === 13){
+                        addExpenseTotal();
+                    }
+                });
+                
+            //get heading element
+                const headingElem = document.querySelector("#headingTotal");
+
+            //initialize expense variable
+                let totalExpense = 0;
+            //array to hold expenses
+                let allExpense = [];
+            
+            //set heading to total expense    
+                update();
+
+            // Controller Elements
+                //update Total
+                function update(){
+                        let textTotal = `Total: ${totalExpense}`;
+                        headingElem.textContent = textTotal;
+                    }
+                //getdate
+                    function getDateString(currDate){
+                        return currDate.toLocaleDateString('en-US',{year: 'numeric', month:'long', day:'numeric'});
+                    }
+                //delete item
+                    function itemDelete(dateValue,amt){
+                        const arr =[];
+                        for(let i= 0; i<allExpense.length;i++){
+                            if (allExpense[i].currDate.valueOf() !== dateValue){
+                                arr.push(allExpense[i]);
+                            }
+                        }
+                        renderList(arr);
+                        totalExpense -=amt;
+                        update();
+                        console.log("Item Deleted",dateValue);	
+                    }
+                //re
+                function renderList(arrNew){
+                    const expenseArrToString = arrNew.map( Ele => { return addListItem(Ele); });
+                    expenseTableElem.innerHTML= expenseArrToString.join("");
+                    allExpense = arrNew;
+                }
+                
+                //View Layer
+                    //create the list element
+                                
+                    function addListItem({desc, amount, currDate}){
+                            return `<li class="list-group-item d-flex justify-content-between">
+                                <div class="d-flex flex-column">
+                                    ${desc}
+                                    <small class="text-muted">${getDateString(currDate)}</small>
+                                </div>
+                                <div>
+                                    <span class="px-5">
+                                        ${amount}
+                                    </span>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="itemDelete(${currDate.valueOf()},${amount})">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </li>`;
+                        }
+                            
+                   
+
+                //main logic
+                    function addExpenseTotal(){
+                        //object to store data
+                        const expenseItem ={};
+                        //read from input elements and convert to number
+                        const inputAmt = parseInt(inputElement.value, 10);
+                        const inputDesc = inputDescElem.value;
+
+                        //add to expenseitems
+                        if (inputDesc !== "" && !isNaN(inputAmt) && inputAmt > 0) {
+                            expenseItem.desc = inputDesc;
+                            expenseItem.amount = inputAmt;
+                            expenseItem.currDate = new Date();
+                            
+                            //update the total expense
+                            totalExpense = totalExpense + inputAmt;
+                            headingElem.textContent = totalExpense;
+                            update();
+
+                            allExpense.push(expenseItem);
+                            
+                    
+                            //write to html doc list
+                            renderList(allExpense);
+                            
+                        }
+                        inputElement.value ="";
+                        inputDescElem.value="";
+                
+                    }
+		</script>
+
+
+    </body>
